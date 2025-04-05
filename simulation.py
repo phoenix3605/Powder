@@ -1,4 +1,4 @@
-import pygame, os, sys, math, random
+import pygame, os, sys, math, random,skimage.draw
 from Mgrid import Grid
 from particle import *
 class Simulation:
@@ -11,14 +11,11 @@ class Simulation:
         self.brushradius = 3
         self.selected = Sand
         self.scroll = 0
+        self.pos = [0,0]
+        self.oldpos = [0,0]
     def draw(self,screen):
         self.grid.draw(screen)
         self.drawbrush(screen)
-    def create(self, row, column):
-        particle = self.materialsclass[self.scroll]
-        cparticle=particle()
-        if random.random() < 0.15 or cparticle.static == True or self.brushradius == 1 or self.mode=="eraser":
-            self.grid.create(row,column,particle)
     def destroy(self, row, column):
         self.grid.destroy(row, column)
     def update(self):
@@ -66,23 +63,35 @@ class Simulation:
     def handlemouse(self):
         buttons = pygame.mouse.get_pressed()
         if buttons[0]:
-            pos=pygame.mouse.get_pos()
-            row = pos[1]//self.cellsize
-            column = pos[0]//self.cellsize
-            self.applybrush(row,column)
-    def applybrush(self,row,column):
-        for r in range(self.brushradius):
-            for c in range(self.brushradius):
-                rrow = row + r
-                ccolumn = column + c
+            self.pos=pygame.mouse.get_pos()
+            row = self.pos[1]//self.cellsize
+            column = self.pos[0]//self.cellsize
+            self.pos=(row,column)
+            self.applybrush(self.oldpos,self.pos)
+            self.oldpos=self.pos
+        else:
+            cupos = pygame.mouse.get_pos()
+            row = cupos[1]//self.cellsize
+            column = cupos[0]//self.cellsize
+            self.oldpos = (row,column)
+
+    def applybrush(self,oldpos,pos):
+            r0, c0 = oldpos
+            r1, c1 = pos
+            rr, cc = self.grid.get_line(self.materialsclass[self.scroll],r0, c0, r1, c1)
+            for r, c in zip(rr, cc):
+                cpos = (r,c)
                 if self.mode == "eraser":
-                    self.destroy(rrow,ccolumn)
+                    self.grid.destroy_circle(cpos,self.brushradius,self.materialsclass[self.scroll])
                 else:
-                    self.create(rrow,ccolumn)
+                    self.grid.create_circle(cpos,self.brushradius,self.materialsclass[self.scroll])
+
     def drawbrush(self, screen):
         mousepos=pygame.mouse.get_pos()
         column=mousepos[0]//self.cellsize
         row=mousepos[1]//self.cellsize
-        brushvisualsize=self.brushradius*self.cellsize
-        col=(255,255,255)
-        pygame.draw.rect(screen,col,(column*self.cellsize,row*self.cellsize,brushvisualsize,brushvisualsize))
+        rr, cc = skimage.draw.disk((row, column), self.brushradius, shape=(self.grid.rows, self.grid.columns))
+        for r, c in zip(rr, cc):
+            x = c * self.cellsize
+            y = r * self.cellsize
+            pygame.draw.rect(screen, (255, 255, 255), (x, y, self.cellsize, self.cellsize))

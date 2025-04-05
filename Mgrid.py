@@ -1,5 +1,5 @@
 import pygame
-from skimage.draw import line
+import skimage.draw
 class Grid:
     def __init__(self, width, height, cellsize):
         self.rows=height//cellsize
@@ -42,6 +42,9 @@ class Grid:
         p1 = self.get_cell(row1, col1)
         p2 = self.get_cell(row2, col2)
         self.cells[row1][col1], self.cells[row2][col2] = self.cells[row2][col2],self.cells[row1][col1]
+    def replace_cell(self,row,column,newparticle):
+        self.destroy(row,column)
+        self.create(row,column,newparticle)
     def reset_particles(self):
         for row in self.cells:
             for particle in row:
@@ -65,6 +68,20 @@ class Grid:
         self.destroy(row,column)
         self.create(row,column,particle)
     def create_line(self,particle,row,column,row2,column2):
-        rr,cc = line(row,column,row2,column2)
+        rr,cc = skimage.draw.line(row,column,row2,column2)
         for r, c in zip(rr, cc):
-            self.create(r,c,particle)
+            if self.check_cell(r,c):
+                self.create(r,c,particle)
+    def get_line(self,particle,row,column,row2,column2):
+        rr,cc = skimage.draw.line(row,column,row2,column2)
+        return rr,cc
+    def create_circle(self,centre,radius,particle):
+        rr,cc = skimage.draw.disk(centre,radius)
+        for r, c in zip(rr, cc):
+            if self.check_cell(r,c):
+                self.create(r,c,particle)      
+    def destroy_circle(self,centre,radius,particle):
+        rr,cc = skimage.draw.disk(centre,radius)
+        for r, c in zip(rr, cc):
+            self.destroy(r,c)
+    

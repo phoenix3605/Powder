@@ -102,6 +102,8 @@ class PowderParticle:
         return row,column
 
 class LiquidParticle:
+    def __init__(self):
+        self.dispersionrate = 5
     def update(self, grid, row, column):
         return self.apply_movement_liquid(grid,row,column)
     def apply_movement_liquid(self,grid,row,column):
@@ -119,7 +121,7 @@ class LiquidParticle:
             self.moved=True
             self.updated = True
             return (cord[0],cord[1])
-        for _ in range(5):   
+        for _ in range(self.dispersionrate):   
             new_column=column+random.choice([-1, 1])
             if grid.check_cell(row+1, new_column):
                 self.updated = True
@@ -194,13 +196,16 @@ class Sand(Particle, PowderParticle):
 
 class Water(Particle, LiquidParticle):
     def __init__(self):
-        super().__init__((0.5,0.62),(0.5,0.7),(0.6,0.8))
+        Particle.__init__(self,(0.5,0.62),(0.5,0.7),(0.6,0.8))
+        LiquidParticle.__init__(self)
+        self.dispersionrate = 99
         self.density=998
-        self.temperature = 5
+        self.temperature = 1000
         self.colour = (17, 50, 61)
     def update(self, grid, row, column):
-        if self.temperature < 1:
-            pass
+        if self.temperature >= 100:
+            grid.replace_cell(row,column,Steam)
+            return row,column
         return LiquidParticle.update(self, grid, row, column)
         
     
@@ -217,11 +222,13 @@ class Fire(Particle):
         super().__init__((0,0),(0,0),(0.9,1))
         self.temperature = 1000
         self.lifetime = 100
+        self.density = 0.3
     def update(self, grid, row, column):
         return Particle.update(self, grid, row, column)
 class Acid(Particle,LiquidParticle):
     def __init__(self):
         super().__init__()
+        self.dispersionrate = 1
         self.colour = (75, 186, 71)
         self.corrodecount=0
         self.density = 1149

@@ -2,7 +2,7 @@ import pygame
 from simulation import Simulation
 WIDTH=1200
 HEIGHT=600
-CELLSIZE=8
+CELLSIZE=4
 GREY = (29,29,29)
 FPS=60
 pygame.init()
