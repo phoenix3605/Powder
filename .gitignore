@@ -1,0 +1,5 @@
+/build
+/dist
+/partbackup.py
+/partbackupnewlogic.py
+/__pycache__
