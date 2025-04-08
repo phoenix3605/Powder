@@ -8,7 +8,9 @@ Controls:
 
 space to reset canvas
 
-q/w to change brush size
+scroll wheel to change brush size
+
+q/w to change brush type
 
 just go to releases and download the exe
 
