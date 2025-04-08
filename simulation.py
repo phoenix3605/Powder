@@ -1,15 +1,20 @@
 import pygame, os, sys, math, random,skimage.draw
 from Mgrid import Grid
 from particle import *
+from particle import Particle
 class Simulation:
     def __init__(self, width, height, cellsize):
         self.grid = Grid(width, height, cellsize)
         self.cellsize=cellsize
-        self.materials=["sand","rock","water","steam","acid","flammablegas","fire"]
-        self.materialsclass=[Sand,Rock,Water,Steam,Acid,FlammableGas,Fire]
+        self.materials=[
+            "sand","rock","steel","platinum","wood","ice","water","steam","acid","flammablegas","fire","smoke","lava","nitrogen","oil"]
+        self.materialsclass=[
+            Sand,Rock,Steel,Platinum,Wood,Ice,Water,Steam,Acid,FlammableGas,Fire,Smoke,Lava,Nitrogen,Oil]
+        self.selected = Sand
+        self.createtypes=["randomcircle","circle"]
+        self.createmode = 0
         self.mode=self.materials[0]
         self.brushradius = 3
-        self.selected = Sand
         self.scroll = 0
         self.pos = [0,0]
         self.oldpos = [0,0]
@@ -55,11 +60,17 @@ class Simulation:
                     self.scroll -= 1
                     self.mode=self.materials[self.scroll]
             case pygame.K_2:
-                if self.scroll < len(self.materials)-2:
+                if self.scroll < len(self.materials)-1:
                     self.scroll += 1
                     self.mode=self.materials[self.scroll]
             case pygame.K_3:
                 self.mode = "eraser"
+            case pygame.K_q:
+                if self.createmode != 0:
+                    self.createmode -= 1
+            case pygame.K_w:
+                if self.createmode != len(self.createtypes)-1:
+                    self.createmode += 1
     def handlemouse(self):
         buttons = pygame.mouse.get_pressed()
         if buttons[0]:
@@ -78,19 +89,28 @@ class Simulation:
     def applybrush(self,oldpos,pos):
             r0, c0 = oldpos
             r1, c1 = pos
-            rr, cc = self.grid.get_line(self.materialsclass[self.scroll],r0, c0, r1, c1)
+            particle_class = self.materialsclass[self.scroll]
+            temp_particle = particle_class()
+            rr, cc = self.grid.get_line(particle_class,r0, c0, r1, c1)
             for r, c in zip(rr, cc):
                 cpos = (r,c)
                 if self.mode == "eraser":
-                    self.grid.destroy_circle(cpos,self.brushradius,self.materialsclass[self.scroll])
+                    self.grid.destroy_circle(cpos,self.brushradius)
                 else:
-                    self.grid.create_circle(cpos,self.brushradius,self.materialsclass[self.scroll])
+                    if not temp_particle.static and self.brushradius > 1:
+                        match self.createtypes[self.createmode]:
+                            case "randomcircle":
+                                self.grid.create_circle_random(cpos,self.brushradius,particle_class)
+                            case "circle":
+                                self.grid.create_circle(cpos,self.brushradius,particle_class)
+                    else:
+                        self.grid.create_circle(cpos,self.brushradius,particle_class)
 
     def drawbrush(self, screen):
         mousepos=pygame.mouse.get_pos()
         column=mousepos[0]//self.cellsize
         row=mousepos[1]//self.cellsize
-        rr, cc = skimage.draw.disk((row, column), self.brushradius, shape=(self.grid.rows, self.grid.columns))
+        rr, cc = skimage.draw.circle_perimeter(row, column, self.brushradius, shape=(self.grid.rows, self.grid.columns))
         for r, c in zip(rr, cc):
             x = c * self.cellsize
             y = r * self.cellsize
