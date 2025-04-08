@@ -4,11 +4,13 @@ import numpy as np
 from particle import Air
 class Grid:
     def __init__(self, width, height, cellsize):
+        self.defaultbg=Air()
+        self.defaultbg1=Air
         self.rows=height//cellsize
         self.columns=width//cellsize
         self.cellsize=cellsize
-        self.cells = np.empty((self.rows, self.columns), dtype=object)
-        self.cells[:] = np.array([[Air() for _ in range(self.columns)] for _ in range(self.rows)])
+        self.cells = np.empty((self.rows, self.columns), dtype=object) #!!!!
+        self.cells[:] = np.array([[self.defaultbg for _ in range(self.columns)] for _ in range(self.rows)])
     def in_bounds(self,row,column):
         return 0 <= row < self.rows and 0 <= column < self.columns
     def draw(self, screen):
@@ -23,10 +25,13 @@ class Grid:
             self.cells[row,column] = particle_type()
     def destroy(self, row, column):
         if self.in_bounds(row,column):
-            self.cells[row,column] = Air()
+            self.cells[row,column] = self.defaultbg #!!!!
     def check_cell(self,row,column):
         if self.in_bounds(row,column):
-            return isinstance(self.cells[row, column], Air)
+            if self.defaultbg1 != None:
+                return isinstance(self.cells[row, column], self.defaultbg1) #!!!!
+            else:
+                return self.cells[row, column] == None
         return False
     def set_cell(self, row, column, particle):
         if self.in_bounds(row,column):
