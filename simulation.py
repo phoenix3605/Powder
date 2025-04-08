@@ -1,4 +1,5 @@
-import pygame, os, sys, math, random,skimage.draw
+import pygame, os, sys, math, random
+from skimage.draw import circle_perimeter
 from Mgrid import Grid
 from particle import *
 from particle import Particle
@@ -110,7 +111,7 @@ class Simulation:
         mousepos=pygame.mouse.get_pos()
         column=mousepos[0]//self.cellsize
         row=mousepos[1]//self.cellsize
-        rr, cc = skimage.draw.circle_perimeter(row, column, self.brushradius, shape=(self.grid.rows, self.grid.columns))
+        rr, cc = circle_perimeter(row, column, self.brushradius, shape=(self.grid.rows, self.grid.columns))
         for r, c in zip(rr, cc):
             x = c * self.cellsize
             y = r * self.cellsize

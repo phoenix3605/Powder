@@ -1,4 +1,5 @@
-import pygame,random,skimage.draw
+import pygame,random
+from skimage.draw import disk, line
 import numpy as np
 from particle import Air
 class Grid:
@@ -69,26 +70,26 @@ class Grid:
         self.destroy(row,column)
         self.create(row,column,particle)
     def create_line(self,particle,row,column,row2,column2):
-        rr,cc = skimage.draw.line(row,column,row2,column2)
+        rr,cc = line(row,column,row2,column2)
         for r, c in zip(rr, cc):
             if self.check_cell(r,c):
                 self.create(r,c,particle)
     def get_line(self,particle,row,column,row2,column2):
-        rr,cc = skimage.draw.line(row,column,row2,column2)
+        rr,cc = line(row,column,row2,column2)
         return rr,cc
     def create_circle(self,centre,radius,particle):
-        rr,cc = skimage.draw.disk(centre,radius)
+        rr,cc = disk(centre,radius)
         for r, c in zip(rr, cc):
             if self.check_cell(r,c):
                 self.create(r,c,particle)   
     def create_circle_random(self,centre,radius,particle):
-        rr,cc = skimage.draw.disk(centre,radius)
+        rr,cc = disk(centre,radius)
         for r, c in zip(rr, cc):
             if self.check_cell(r,c) or hasattr(self.get_cell(r,c),"condensing"):
                 if random.random() < 0.08:
                     self.create(r,c,particle)      
     def destroy_circle(self,centre,radius):
-        rr,cc = skimage.draw.disk(centre,radius)
+        rr,cc = disk(centre,radius)
         for r, c in zip(rr, cc):
             self.destroy(r,c)
     def is_covered(self,grid,row,column,exception1,exception2):
